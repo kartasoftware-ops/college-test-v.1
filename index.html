@@ -12,7 +12,12 @@
     <!-- PWA Manifest & Meta -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#1e40af">
+
+    <!-- iOS PWA Support -->
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3413/3413535.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="College Notices">
 
     <style>
         :root {
@@ -1441,7 +1446,7 @@
             const banner = document.getElementById('internal-install-banner'); // Changed to internal banner
             const mainInstallBtn = document.getElementById('internal-pwa-install-btn'); // Changed to internal button
 
-            // Wire up main install button if supported
+            // Wire up main install button if supported (Android / Chrome)
             if (window.deferredPrompt) {
                 banner.classList.remove('hidden');
                 mainInstallBtn.addEventListener('click', async () => {
@@ -1450,6 +1455,19 @@
                     if (outcome === 'accepted') banner.classList.add('hidden');
                     window.deferredPrompt = null;
                 });
+            } else {
+                // iOS Detection & Instructions
+                const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+                const isStandalone = window.navigator.standalone === true; // iOS legacy
+                const isDisplayStandalone = window.matchMedia('(display-mode: standalone)').matches; // Standard
+
+                if (isIos && !isStandalone && !isDisplayStandalone) {
+                    banner.classList.remove('hidden');
+                    mainInstallBtn.innerText = "Install on iOS";
+                    mainInstallBtn.onclick = () => {
+                        alert("To install on iOS:\n\n1. Tap the Share button (square with arrow) at the bottom of your browser.\n2. Scroll down and tap 'Add to Home Screen'.");
+                    };
+                }
             }
 
             // Notification Permission
