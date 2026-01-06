@@ -2017,14 +2017,7 @@
             const text = document.getElementById('suggestion-text').value.trim();
             if (!text) return;
 
-            // Simple Local Limit (1 per day)
-            const lastDate = localStorage.getItem('last_suggestion_date');
-            const today = new Date().toDateString();
-            if (lastDate === today) {
-                alert("You can only submit one suggestion per day. Thank you!");
-                document.getElementById('suggestion-modal').classList.add('hidden');
-                return;
-            }
+
 
             const urlParams = new URLSearchParams(window.location.search);
             const schoolId = urlParams.get('school');
@@ -2044,7 +2037,7 @@
                     meta: meta // Save tracking info
                 });
 
-                localStorage.setItem('last_suggestion_date', today);
+
                 alert("Thank you! Your suggestion has been sent anonymously.");
                 e.target.reset();
                 document.getElementById('suggestion-modal').classList.add('hidden');
