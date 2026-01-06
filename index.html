@@ -901,13 +901,12 @@
                 Notification.requestPermission();
             }
 
-            const schoolRef = ref(db, 'schools/' + schoolId);
-            onValue(schoolRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) {
-                    document.getElementById('public-view').innerHTML = `<div class="text-center mt-20 text-red-500 font-bold">School Not Found</div>`;
-                    setLoading(false);
-                    return;
+            // 1. Fetch Profile (Public)
+            const profileRef = ref(db, 'schools/' + schoolId + '/profile');
+            onValue(profileRef, (snapshot) => {
+                const profile = snapshot.val();
+                if (!profile) {
+                    console.log("Profile not found");
                 }
 
                 // Header Branding Override
@@ -915,16 +914,15 @@
                 const navText = document.querySelector('nav h1');
                 const navIcon = document.getElementById('nav-icon');
 
-                if (data.profile) {
+                if (profile) {
                     // Update Text
-                    navText.innerText = data.profile.name || "Notice Board";
-                    document.getElementById('public-school-name').innerText = data.profile.name || "Notices";
-                    updateAppTheme(data.profile.themeColor);
+                    navText.innerText = profile.name || "Notice Board";
+                    document.getElementById('public-school-name').innerText = profile.name || "Notices";
+                    updateAppTheme(profile.themeColor);
 
-                    // Re-enable footer if we want stats? No, user said remove "everything"
                     // Branding Logo
-                    if (data.profile.logoUrl) {
-                        navLogo.src = data.profile.logoUrl;
+                    if (profile.logoUrl) {
+                        navLogo.src = profile.logoUrl;
                         navLogo.classList.remove('hidden');
                         navIcon.classList.add('hidden');
                     } else {
@@ -933,20 +931,29 @@
                     }
 
                     // --- DYNAMIC MANIFEST UPDATE ---
-                    updateDynamicManifest(data.profile);
+                    updateDynamicManifest(profile);
                 }
+            }, (error) => {
+                console.error("Profile access denied:", error);
+                document.getElementById('public-view').innerHTML = `<div class="text-center mt-20 text-red-500 font-bold">School Not Found or Access Denied</div>`;
+                setLoading(false);
+            });
 
+            // 2. Fetch Notices (Public)
+            const noticesRef = ref(db, 'schools/' + schoolId + '/notices');
+            onValue(noticesRef, (snapshot) => {
+                const data = snapshot.val();
                 const list = document.getElementById('public-notices-list');
                 list.innerHTML = '';
 
-                if (!data.notices) {
+                if (!data) {
                     list.innerHTML = `<div class="text-center p-8 text-gray-400">No notices posted yet.</div>`;
                     setLoading(false);
                     return;
                 }
 
                 // Store in global scope for search filtering
-                window.publicNotices = Object.entries(data.notices).map(([key, val]) => ({ id: key, ...val }));
+                window.publicNotices = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
                 const notices = window.publicNotices;
                 // Sort by timestamp desc
                 notices.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -957,9 +964,10 @@
                     if (new Date(newest.timestamp) > lastNoticeDate) {
                         // Logic to show notification
                         if (Notification.permission === "granted") {
-                            new Notification(data.profile.name, {
+                            const appName = document.title || "College Notices";
+                            new Notification(appName, {
                                 body: "New Notice: " + newest.title,
-                                icon: data.profile.logoUrl || './icon-192.png'
+                                icon: './icon-192.png'
                             });
                         }
                     }
@@ -967,6 +975,9 @@
                 lastNoticeDate = notices.length > 0 ? new Date(notices[0].timestamp) : new Date();
 
                 renderNotices(window.publicNotices);
+                setLoading(false);
+            }, (error) => {
+                console.error("Notices access denied:", error);
                 setLoading(false);
             });
         }
