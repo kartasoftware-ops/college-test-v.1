@@ -1174,13 +1174,20 @@
                     if (data.themeColor) updateAppTheme(data.themeColor);
 
                     // Show Logo
-                    const logoImg = document.getElementById('admin-logo-display');
                     if (data.logoUrl) {
                         logoImg.src = data.logoUrl;
                         logoImg.classList.remove('hidden');
                     } else {
                         logoImg.classList.add('hidden');
                     }
+
+                    // --- FORCE DYNAMIC MANIFEST FOR ADMIN ---
+                    // This ensures installed app opens Admin Dashboard
+                    updateDynamicManifest({
+                        name: data.name,
+                        themeColor: data.themeColor,
+                        logoUrl: data.logoUrl
+                    });
                 }
                 setLoading(false);
             });
