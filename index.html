@@ -17,12 +17,40 @@
     <style>
         :root {
             --theme-color: #1e40af;
-            /* Default fallback */
+            /* Light mode colors */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-primary: #e5e7eb;
+            --border-secondary: #f3f4f6;
+            --shadow-sm: rgba(0, 0, 0, 0.05);
+            --shadow-md: rgba(0, 0, 0, 0.1);
+            --shadow-lg: rgba(0, 0, 0, 0.15);
+        }
+
+        /* Dark mode colors */
+        body.dark-mode {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --border-primary: #334155;
+            --border-secondary: #1e293b;
+            --shadow-sm: rgba(0, 0, 0, 0.3);
+            --shadow-md: rgba(0, 0, 0, 0.4);
+            --shadow-lg: rgba(0, 0, 0, 0.5);
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8fafc;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Dynamic Theme Classes */
@@ -110,6 +138,67 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Dark Mode Additional Styles */
+        body.dark-mode .bg-white {
+            background-color: var(--bg-secondary) !important;
+        }
+
+        body.dark-mode .bg-gray-50,
+        body.dark-mode .bg-gray-100 {
+            background-color: var(--bg-tertiary) !important;
+        }
+
+        body.dark-mode .text-gray-800,
+        body.dark-mode .text-gray-900 {
+            color: var(--text-primary) !important;
+        }
+
+        body.dark-mode .text-gray-600,
+        body.dark-mode .text-gray-700 {
+            color: var(--text-secondary) !important;
+        }
+
+        body.dark-mode .text-gray-400,
+        body.dark-mode .text-gray-500 {
+            color: var(--text-tertiary) !important;
+        }
+
+        body.dark-mode .border-gray-100,
+        body.dark-mode .border-gray-200 {
+            border-color: var(--border-primary) !important;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        /* Bookmark styles */
+        .bookmark-active {
+            color: #fbbf24 !important;
+        }
+
+        /* Reaction buttons */
+        .reaction-btn {
+            transition: all 0.2s ease;
+        }
+
+        .reaction-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .reaction-active {
+            background-color: rgba(59, 130, 246, 0.1) !important;
+            border-color: #3b82f6 !important;
+        }
     </style>
 </head>
 
@@ -126,6 +215,13 @@
             </div>
 
             <div class="flex items-center space-x-3">
+                <!-- Dark Mode Toggle -->
+                <button id="dark-mode-toggle" onclick="toggleDarkMode()"
+                    class="bg-white bg-opacity-20 text-white border border-white border-opacity-40 px-3 py-1.5 rounded-lg hover:bg-opacity-30 transition flex items-center"
+                    title="Toggle Dark Mode">
+                    <i id="dark-mode-icon" class="fa-solid fa-moon"></i>
+                </button>
+
                 <!-- PWA Install Button -->
                 <button id="install-btn"
                     class="hidden bg-white text-blue-900 px-3 py-1.5 rounded-full text-xs font-bold shadow-md hover:bg-gray-100 transition flex items-center">
@@ -170,6 +266,9 @@
             </div>
         </div>
 
+        </div>
+        </div>
+
         <!-- Admin Inbox Modal -->
         <div id="admin-inbox-modal"
             class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
@@ -184,6 +283,203 @@
                 </div>
                 <div id="inbox-list" class="flex-grow overflow-y-auto p-4 space-y-3">
                     <!-- Items -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Settings Modal -->
+        <div id="admin-settings-modal"
+            class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">School Settings</h3>
+                    <button onclick="document.getElementById('admin-settings-modal').classList.add('hidden')"
+                        class="text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <form onsubmit="saveSettings(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">School Name</label>
+                        <input type="text" id="settings-name" required
+                            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:bg-white focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Brand Color</label>
+                        <div class="flex items-center space-x-2 border rounded p-2 bg-white">
+                            <input type="color" id="settings-color"
+                                class="h-8 w-10 cursor-pointer border-none bg-transparent"
+                                onchange="previewTheme(this.value)">
+                            <span class="text-sm text-gray-600">Pick Theme Color</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Update Logo</label>
+                        <input type="file" id="settings-logo" accept="image/*"
+                            class="w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <p class="text-[10px] text-gray-400 mt-1">Leave empty to keep current logo. Max 100KB.</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100">
+                        <h4 class="text-sm font-bold text-gray-800 mb-3">Social Media Handles</h4>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="flex items-center">
+                                <i class="fa-brands fa-facebook text-blue-600 w-8 text-center text-lg"></i>
+                                <input type="url" id="settings-fb" placeholder="Facebook Page URL"
+                                    class="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm focus:outline-none focus:bg-white">
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa-brands fa-instagram text-pink-600 w-8 text-center text-lg"></i>
+                                <input type="url" id="settings-insta" placeholder="Instagram Profile URL"
+                                    class="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm focus:outline-none focus:bg-white">
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa-brands fa-twitter text-blue-400 w-8 text-center text-lg"></i>
+                                <input type="url" id="settings-twitter" placeholder="Twitter Profile URL"
+                                    class="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm focus:outline-none focus:bg-white">
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-globe text-gray-600 w-8 text-center text-lg"></i>
+                                <input type="url" id="settings-web" placeholder="Website URL"
+                                    class="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm focus:outline-none focus:bg-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full theme-bg text-white font-bold py-3 rounded shadow hover:opacity-90 transition mt-4">
+                        Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bookmarks Modal (Student) -->
+        <div id="bookmarks-modal"
+            class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-2xl p-0 shadow-2xl relative flex flex-col max-h-[80vh]">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-bookmark text-yellow-500"></i> My Bookmarks
+                    </h3>
+                    <button onclick="document.getElementById('bookmarks-modal').classList.add('hidden')"
+                        class="text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                <div id="bookmarks-list" class="flex-grow overflow-y-auto p-4 space-y-3">
+                    <!-- Bookmarked notices will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Templates Modal (Admin) -->
+        <div id="templates-modal"
+            class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-3xl p-0 shadow-2xl relative flex flex-col max-h-[80vh]">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-file-lines text-purple-500"></i> Notice Templates
+                    </h3>
+                    <button onclick="document.getElementById('templates-modal').classList.add('hidden')"
+                        class="text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                <div id="templates-list" class="flex-grow overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Templates will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Modal (Admin) -->
+        <div id="analytics-modal"
+            class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-5xl p-0 shadow-2xl relative flex flex-col max-h-[85vh]">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-green-500"></i> Detailed Analytics
+                    </h3>
+                    <button onclick="document.getElementById('analytics-modal').classList.add('hidden')"
+                        class="text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                <div id="analytics-content" class="flex-grow overflow-y-auto p-6">
+                    <!-- Analytics content will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar View Modal (Student) -->
+        <div id="calendar-modal"
+            class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-6xl p-0 shadow-2xl relative flex flex-col max-h-[90vh]">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar text-blue-500"></i> Events Calendar
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeCalendarMonth(-1)"
+                            class="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <span id="calendar-month-display" class="font-bold text-sm px-3"></span>
+                        <button onclick="changeCalendarMonth(1)"
+                            class="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                        <button onclick="document.getElementById('calendar-modal').classList.add('hidden')"
+                            class="text-gray-400 hover:text-gray-600 ml-4">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="calendar-content" class="flex-grow overflow-y-auto p-6">
+                    <!-- Calendar grid will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Share Modal (Student) -->
+        <div id="share-modal"
+            class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+                <button onclick="document.getElementById('share-modal').classList.add('hidden')"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+                <div class="text-center mb-4">
+                    <div
+                        class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-share-nodes text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">Share Notice</h3>
+                    <p class="text-xs text-gray-500 mt-1" id="share-notice-title"></p>
+                </div>
+                <div class="space-y-3">
+                    <button onclick="shareVia('copy')"
+                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-link"></i> Copy Link
+                    </button>
+                    <button onclick="shareVia('whatsapp')"
+                        class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp"></i> Share on WhatsApp
+                    </button>
+                    <button onclick="shareVia('facebook')"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-facebook"></i> Share on Facebook
+                    </button>
+                    <button onclick="shareVia('twitter')"
+                        class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-twitter"></i> Share on Twitter
+                    </button>
+                </div>
+                <div id="share-qr-code" class="mt-4 p-4 bg-gray-50 rounded-xl text-center hidden">
+                    <p class="text-xs text-gray-500 mb-2">Scan QR Code</p>
+                    <canvas id="qr-canvas" class="mx-auto"></canvas>
                 </div>
             </div>
         </div>
@@ -315,6 +611,28 @@
                                 class="bg-blue-50 text-blue-600 p-2 rounded-lg hover:bg-blue-100 transition relative"
                                 title="Suggestion Inbox">
                                 <i class="fa-solid fa-inbox text-xl"></i>
+                                <span id="inbox-badge"
+                                    class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                            </button>
+                            <button onclick="openTemplates()"
+                                class="bg-purple-50 text-purple-600 p-2 rounded-lg hover:bg-purple-100 transition"
+                                title="Notice Templates">
+                                <i class="fa-solid fa-file-lines text-xl"></i>
+                            </button>
+                            <button onclick="openAnalytics()"
+                                class="bg-green-50 text-green-600 p-2 rounded-lg hover:bg-green-100 transition"
+                                title="Detailed Analytics">
+                                <i class="fa-solid fa-chart-line text-xl"></i>
+                            </button>
+                            <button onclick="exportNotices()"
+                                class="bg-orange-50 text-orange-600 p-2 rounded-lg hover:bg-orange-100 transition"
+                                title="Export Notices">
+                                <i class="fa-solid fa-download text-xl"></i>
+                            </button>
+                            <button onclick="openSettings()"
+                                class="bg-gray-100 text-gray-600 p-2 rounded-lg hover:bg-gray-200 transition relative"
+                                title="School Settings">
+                                <i class="fa-solid fa-gear text-xl"></i>
                             </button>
                         </div>
                         <span
@@ -335,6 +653,40 @@
                 </div>
             </div>
 
+            <!-- Analytics Dashboard -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
+                    <div
+                        class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xl mr-4">
+                        <i class="fa-regular fa-file-lines"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Notices</p>
+                        <h4 class="text-2xl font-bold text-gray-800" id="stat-total-notices">0</h4>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
+                    <div
+                        class="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-xl mr-4">
+                        <i class="fa-regular fa-eye"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Views</p>
+                        <h4 class="text-2xl font-bold text-gray-800" id="stat-total-views">0</h4>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
+                    <div
+                        class="w-12 h-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-xl mr-4">
+                        <i class="fa-regular fa-thumbs-up"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Likes</p>
+                        <h4 class="text-2xl font-bold text-gray-800" id="stat-total-likes">0</h4>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Add Notice Form -->
                 <div class="lg:col-span-1">
@@ -345,18 +697,38 @@
                         <form onsubmit="postNotice(event)" class="space-y-5">
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Type</label>
-                                <div class="relative">
-                                    <select id="notice-category"
-                                        class="block appearance-none w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-                                        <option value="General">General Announcement</option>
-                                        <option value="Exam Schedule">Exam Schedule</option>
-                                        <option value="Exam Result">Exam Results</option>
-                                        <option value="Holiday">Holiday / Closure</option>
-                                        <option value="Event">Event / Program</option>
-                                    </select>
-                                    <div
-                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="relative">
+                                        <select id="notice-category"
+                                            class="block appearance-none w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                            <option value="General">General</option>
+                                            <option value="Exam Schedule">Exam Schedule</option>
+                                            <option value="Exam Result">Exam Results</option>
+                                            <option value="Holiday">Holiday</option>
+                                            <option value="Event">Event</option>
+                                        </select>
+                                        <div
+                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="relative">
+                                        <select id="notice-target"
+                                            class="block appearance-none w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                            <option value="All">All Semesters</option>
+                                            <option value="Sem 1">Semester 1</option>
+                                            <option value="Sem 2">Semester 2</option>
+                                            <option value="Sem 3">Semester 3</option>
+                                            <option value="Sem 4">Semester 4</option>
+                                            <option value="Sem 5">Semester 5</option>
+                                            <option value="Sem 6">Semester 6</option>
+                                            <option value="Sem 7">Semester 7</option>
+                                            <option value="Sem 8">Semester 8</option>
+                                        </select>
+                                        <div
+                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -372,7 +744,21 @@
                                     class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:bg-white focus:border-blue-500 transition resize-none"></textarea>
                             </div>
 
-                            <!-- New Media Fields -->
+                            <!-- Pin and Schedule Toggles -->
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div class="flex items-center space-x-2">
+                                    <input type="checkbox" id="notice-pinned"
+                                        class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300">
+                                    <label for="notice-pinned"
+                                        class="text-sm font-bold text-gray-700 cursor-pointer flex items-center">
+                                        <i class="fa-solid fa-thumbtack mr-2 text-gray-400"></i> Pin to Top
+                                    </label>
+                                </div>
+                            </div>
+
+
+
+                            <!-- Media Fields -->>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Attach
@@ -419,6 +805,7 @@
         <!-- 3. Public Notice Board View -->
         <div id="public-view" class="hidden">
             <!-- Public Header -->
+            <!-- Public Header (Removed) 
             <div class="bg-white rounded-2xl shadow-xl p-8 mb-10 text-center relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-2 theme-bg"></div>
 
@@ -426,7 +813,6 @@
                     <img id="public-logo-display" src="" alt="School Logo"
                         class="h-24 w-24 object-contain mb-4 rounded-xl bg-white shadow-sm border p-1 hidden">
 
-                    <!-- Fallback Icon if no logo -->
                     <div id="public-logo-fallback"
                         class="w-20 h-20 theme-bg bg-opacity-10 theme-text rounded-full flex items-center justify-center mb-4 text-3xl hidden">
                         <i class="fa-solid fa-school"></i>
@@ -437,60 +823,138 @@
                     </p>
                 </div>
             </div>
+            -->
 
             <div class="max-w-4xl mx-auto">
                 <div class="flex items-center justify-between mb-8 px-2">
                     <h3 class="text-2xl font-bold text-gray-700">Latest Updates</h3>
-                    <div class="hidden sm:flex space-x-2">
-                        <div class="flex items-center text-xs text-gray-500 bg-white px-2 py-1 rounded border">
-                            <div class="w-2 h-2 rounded-full bg-red-500 mr-1"></div> Urgent
-                        </div>
-                        <div class="flex items-center text-xs text-gray-500 bg-white px-2 py-1 rounded border">
-                            <div class="w-2 h-2 rounded-full bg-green-500 mr-1"></div> Result
-                        </div>
+                    <div class="flex space-x-2">
+                        <button onclick="openBookmarks()"
+                            class="bg-white hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg shadow-sm border border-gray-200 transition flex items-center gap-2 text-sm font-bold"
+                            title="My Bookmarks">
+                            <i class="fa-solid fa-bookmark text-yellow-500"></i>
+                            <span class="hidden sm:inline">Bookmarks</span>
+                            <span id="bookmark-count"
+                                class="hidden bg-yellow-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">0</span>
+                        </button>
+                        <button onclick="openCalendar()"
+                            class="bg-white hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg shadow-sm border border-gray-200 transition flex items-center gap-2 text-sm font-bold"
+                            title="Events Calendar">
+                            <i class="fa-solid fa-calendar text-blue-500"></i>
+                            <span class="hidden sm:inline">Calendar</span>
+                        </button>
                     </div>
                 </div>
 
-                <div id="internal-install-banner"
-                    class="hidden bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 flex items-center justify-between shadow-sm">
-                    <div class="flex items-center space-x-3">
-                        <div class="bg-blue-100 p-2 rounded-full text-blue-600">
-                            <i class="fa-solid fa-mobile-screen-button"></i>
-                        </div>
-                        <div>
-                            <p class="font-bold text-gray-800 text-sm">Install App</p>
-                            <p class="text-xs text-gray-500">Get faster access & notifications</p>
-                        </div>
+                <!-- Legend Hidden on Small Screens -->
+                <div class="hidden sm:flex space-x-2">
+                    <div class="flex items-center text-xs text-gray-500 bg-white px-2 py-1 rounded border">
+                        <div class="w-2 h-2 rounded-full bg-red-500 mr-1"></div> Urgent
                     </div>
-                    <button id="internal-pwa-install-btn"
-                        class="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow hover:bg-blue-700 transition">
-                        Install
-                    </button>
+                    <div class="flex items-center text-xs text-gray-500 bg-white px-2 py-1 rounded border">
+                        <div class="w-2 h-2 rounded-full bg-green-500 mr-1"></div> Result
+                    </div>
                 </div>
+            </div>
 
-                <h2 id="public-college-name" class="text-2xl font-bold text-gray-800 mb-6 text-center hidden sm:block">
-                    No College Selected</h2>
+            <div id="internal-install-banner"
+                class="hidden bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 flex items-center justify-between shadow-sm">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-100 p-2 rounded-full text-blue-600">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-gray-800 text-sm">Install App</p>
+                        <p class="text-xs text-gray-500">Get faster access & notifications</p>
+                    </div>
+                </div>
+                <button id="internal-pwa-install-btn"
+                    class="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow hover:bg-blue-700 transition">
+                    Install
+                </button>
+            </div>
 
-                <!-- Search Bar -->
-                <div class="mb-6 relative max-w-2xl mx-auto">
-                    <input type="text" id="public-search" placeholder="Search notices by title, category, or content..."
-                        class="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-xl shadow-lg shadow-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-100 text-gray-700 transition"
+            <h2 id="public-college-name" class="text-2xl font-bold text-gray-800 mb-6 text-center hidden sm:block">
+                No College Selected</h2>
+
+            <!-- Search & Semester Filter -->
+            <div class="mb-6 flex flex-col sm:flex-row gap-4 max-w-4xl mx-auto">
+                <div class="relative flex-grow">
+                    <input type="text" id="public-search" placeholder="Search notices..."
+                        class="w-full pl-12 pr-4 py-3 bg-white border border-gray-100 rounded-xl shadow-lg shadow-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-100 text-gray-700 transition"
                         oninput="filterNotices(this.value)">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <i class="fa-solid fa-magnifying-glass text-gray-400 text-lg"></i>
                     </div>
                 </div>
 
-                <div id="public-notices-list" class="grid gap-6">
-                    <!-- Public notices injected here -->
-                    <div class="text-center py-12">
-                        <div
-                            class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-10 w-10 mx-auto mb-3">
-                        </div>
-                        <p class="text-gray-400">Fetching notices...</p>
+                <div class="relative min-w-[160px]">
+                    <select id="public-semester-filter" onchange="filterBySemester(this.value)"
+                        class="block appearance-none w-full bg-white border border-gray-100 text-gray-700 py-3 px-4 pr-8 rounded-xl shadow-lg shadow-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-100 font-bold">
+                        <option value="All">All Semesters</option>
+                        <option value="Sem 1">Semester 1</option>
+                        <option value="Sem 2">Semester 2</option>
+                        <option value="Sem 3">Semester 3</option>
+                        <option value="Sem 4">Semester 4</option>
+                        <option value="Sem 5">Semester 5</option>
+                        <option value="Sem 6">Semester 6</option>
+                        <option value="Sem 7">Semester 7</option>
+                        <option value="Sem 8">Semester 8</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                        <i class="fa-solid fa-filter"></i>
                     </div>
                 </div>
             </div>
+
+            <!-- Category Chips -->
+            <div class="mb-6 flex space-x-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+                <button onclick="filterByCategory('All', this)"
+                    class="category-chip active px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap bg-blue-600 text-white shadow-md transition transform hover:scale-105 ring-2 ring-blue-100 border border-blue-600">
+                    <i class="fa-solid fa-layer-group mr-2"></i>All
+                </button>
+                <button onclick="filterByCategory('Exam', this)"
+                    class="category-chip px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap bg-white text-gray-600 border border-gray-200 shadow-sm transition transform hover:scale-105 hover:bg-gray-50">
+                    <i class="fa-solid fa-clock mr-2 text-red-500"></i>Exams
+                </button>
+                <button onclick="filterByCategory('Result', this)"
+                    class="category-chip px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap bg-white text-gray-600 border border-gray-200 shadow-sm transition transform hover:scale-105 hover:bg-gray-50">
+                    <i class="fa-solid fa-square-check mr-2 text-green-500"></i>Results
+                </button>
+                <button onclick="filterByCategory('Holiday', this)"
+                    class="category-chip px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap bg-white text-gray-600 border border-gray-200 shadow-sm transition transform hover:scale-105 hover:bg-gray-50">
+                    <i class="fa-solid fa-umbrella-beach mr-2 text-yellow-500"></i>Holidays
+                </button>
+                <button onclick="filterByCategory('Event', this)"
+                    class="category-chip px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap bg-white text-gray-600 border border-gray-200 shadow-sm transition transform hover:scale-105 hover:bg-gray-50">
+                    <i class="fa-solid fa-calendar-star mr-2 text-purple-500"></i>Events
+                </button>
+                <button onclick="filterByCategory('General', this)"
+                    class="category-chip px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap bg-white text-gray-600 border border-gray-200 shadow-sm transition transform hover:scale-105 hover:bg-gray-50">
+                    <i class="fa-solid fa-bullhorn mr-2 text-blue-400"></i>General
+                </button>
+            </div>
+
+            <div id="public-notices-list" class="grid gap-6">
+                <!-- Public notices injected here -->
+                <div class="text-center py-12">
+                    <div
+                        class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-10 w-10 mx-auto mb-3">
+                    </div>
+                    <p class="text-gray-400">Fetching notices...</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer id="public-footer" class="mt-4 border-t border-gray-200 py-2 text-center hidden">
+                <div class="flex justify-center space-x-3 mb-1" id="footer-socials">
+                    <!-- Social Icons injected here -->
+                </div>
+                <p class="text-gray-600 font-bold text-xs mb-0.5" id="footer-school-name"></p>
+                <p class="text-gray-400 text-[10px]">&copy; <span id="footer-year"></span> All Rights Reserved.</p>
+                <p class="text-gray-300 text-[9px] mt-0.5">Powered by College Notice Platform</p>
+            </footer>
+        </div>
         </div>
 
     </main>
@@ -503,7 +967,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, set, push, onValue, remove, query, orderByChild, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, update, onValue, remove, query, orderByChild, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // --- Configuration ---
         const firebaseConfig = {
@@ -720,36 +1184,81 @@
             onValue(ref(db, 'schools/' + currentUser.uid + '/notices'), (snapshot) => {
                 const list = document.getElementById('admin-notices-list');
                 list.innerHTML = '';
-                let count = 0;
 
-                const notices = [];
-                snapshot.forEach(c => notices.push({ id: c.key, ...c.val() }));
-                notices.reverse();
-
-                if (notices.length === 0) {
+                const data = snapshot.val();
+                if (!data) {
                     list.innerHTML = `
                         <div class="text-center text-gray-400 py-12 bg-white rounded-xl border-2 border-dashed border-gray-200">
                             <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-30"></i>
                             <p>No notices posted yet.</p>
                         </div>`;
+                    document.getElementById('notice-count').innerText = "0";
+                    return;
                 }
 
-                notices.forEach((notice) => {
+                const notices = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+
+                // Robust Sort
+                notices.sort((a, b) => {
+                    const pinnedA = a.isPinned ? 1 : 0;
+                    const pinnedB = b.isPinned ? 1 : 0;
+                    if (pinnedA !== pinnedB) return pinnedB - pinnedA;
+
+                    const timeA = new Date(a.timestamp).getTime() || 0;
+                    const timeB = new Date(b.timestamp).getTime() || 0;
+                    return timeB - timeA;
+                });
+
+                let count = 0;
+                notices.forEach((notice, index) => {
                     count++;
                     const card = document.createElement('div');
-                    card.className = 'bg-white rounded-lg shadow-sm p-5 border border-gray-100 hover:shadow-md transition relative group';
+                    card.className = `bg-white rounded-lg shadow-sm p-4 border ${notice.isPinned ? 'border-blue-200 bg-blue-50' : 'border-gray-100'} hover:shadow-md transition relative group`;
+
+                    const targetBadge = (notice.target && notice.target !== 'All')
+                        ? `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-200 ml-2"><i class="fa-solid fa-bullseye mr-1"></i>${notice.target}</span>`
+                        : '';
+
+                    const pinIcon = notice.isPinned ? '<i class="fa-solid fa-thumbtack text-blue-500 mr-2" title="Pinned"></i>' : '';
+                    const pinBtnClass = notice.isPinned ? 'text-blue-500 hover:text-gray-400' : 'text-gray-400 hover:text-blue-500';
+
                     card.innerHTML = `
             <div class="flex justify-between items-start">
-                <div>
-                    <span class="text-[10px] font-bold theme-text bg-gray-100 px-2 py-1 rounded uppercase tracking-wide border border-gray-200">${notice.category}</span>
-                    <h4 class="text-lg font-bold text-gray-800 mt-2">${notice.title}</h4>
+                <div class="flex-grow">
+                    <div class="flex items-center flex-wrap gap-y-1 mb-1">
+                        ${pinIcon}
+                        <span class="text-[10px] font-bold theme-text bg-gray-100 px-2 py-1 rounded uppercase tracking-wide border border-gray-200">${notice.category}</span>
+                        ${targetBadge}
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-800 mt-1 leading-snug">${notice.title}</h4>
                     <p class="text-xs text-gray-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>${new Date(notice.timestamp).toLocaleString()}</p>
                 </div>
-                <button onclick="deleteNotice('${notice.id}')" class="text-gray-300 hover:text-red-500 transition p-2 opacity-0 group-hover:opacity-100">
-                    <i class="fa-solid fa-trash-can text-lg"></i>
-                </button>
+                
+                <div class="flex flex-col items-end space-y-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                     <div class="flex space-x-1">
+                        <button onclick="togglePin('${notice.id}', ${notice.isPinned})" class="${pinBtnClass} p-1" title="${notice.isPinned ? 'Unpin' : 'Pin to Top'}">
+                            <i class="fa-solid fa-thumbtack"></i>
+                        </button>
+                    </div>
+                    <div class="flex space-x-1">
+                        <button onclick="moveNotice('${notice.id}', -1, ${index})" class="text-gray-400 hover:text-blue-600 p-1" title="Move Up">
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                        <button onclick="moveNotice('${notice.id}', 1, ${index})" class="text-gray-400 hover:text-blue-600 p-1" title="Move Down">
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </button>
+                    </div>
+                    <div class="flex space-x-1">
+                         <button onclick="editNotice('${notice.id}')" class="text-gray-400 hover:text-green-600 p-1" title="Edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteNotice('${notice.id}')" class="text-gray-400 hover:text-red-500 p-1" title="Delete">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="mt-3 pt-3 border-t border-gray-100">
+            <div class="mt-2 pt-2 border-t border-gray-100">
                 <p class="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">${notice.content}</p>
             </div>
             `;
@@ -757,82 +1266,102 @@
                 });
                 document.getElementById('notice-count').innerText = count;
 
-                // --- Analytics Calculation ---
-                let totalViews = 0;
-                let totalLikes = 0;
-                let totalComments = 0;
+                // --- Analytics Update ---
+                const totalViews = notices.reduce((sum, n) => sum + (n.views || 0), 0);
+                const totalLikes = notices.reduce((sum, n) => sum + (n.likes || 0), 0);
 
-                notices.forEach(n => {
-                    totalViews += (n.views || 0);
-                    totalLikes += (n.likes || 0);
-                    if (n.comments) totalComments += Object.keys(n.comments).length;
-                });
+                const statNotices = document.getElementById('stat-total-notices');
+                const statViews = document.getElementById('stat-total-views');
+                const statLikes = document.getElementById('stat-total-likes');
 
-                const analyticsHTML = `
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center items-center text-center">
-                            <div class="bg-blue-50 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center mb-2">
-                                <i class="fa-regular fa-eye"></i>
-                            </div>
-                            <p class="text-2xl font-bold text-gray-800">${totalViews}</p>
-                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Total Views</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center items-center text-center">
-                            <div class="bg-orange-50 text-orange-600 w-8 h-8 rounded-full flex items-center justify-center mb-2">
-                                <i class="fa-regular fa-file-lines"></i>
-                            </div>
-                            <p class="text-2xl font-bold text-gray-800">${count}</p>
-                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Notices</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center items-center text-center">
-                            <div class="bg-green-50 text-green-600 w-8 h-8 rounded-full flex items-center justify-center mb-2">
-                                <i class="fa-regular fa-thumbs-up"></i>
-                            </div>
-                            <p class="text-2xl font-bold text-gray-800">${totalLikes}</p>
-                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Total Likes</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center items-center text-center">
-                            <div class="bg-purple-50 text-purple-600 w-8 h-8 rounded-full flex items-center justify-center mb-2">
-                                <i class="fa-regular fa-comments"></i>
-                            </div>
-                            <p class="text-2xl font-bold text-gray-800">${totalComments}</p>
-                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Comments</p>
-                        </div>
-                    </div>
-                `;
+                if (statNotices) statNotices.innerText = count;
+                if (statViews) statViews.innerText = totalViews;
+                if (statLikes) statLikes.innerText = totalLikes;
 
-                // Insert Analytics before list
-                const dashboardHeader = list.previousElementSibling || list.parentNode.querySelector('h3'); // fallback
-                // Check if already exists to avoid dupes on re-render (naive check)
-                const existingAnalytics = document.getElementById('admin-analytics-dashboard');
-                if (existingAnalytics) existingAnalytics.remove();
-
-                const analyticsContainer = document.createElement('div');
-                analyticsContainer.id = 'admin-analytics-dashboard';
-                analyticsContainer.innerHTML = analyticsHTML;
-
-                if (list.parentNode) {
-                    list.parentNode.insertBefore(analyticsContainer, list);
-                }
             });
         }
+
+
+        // --- Edit & Move Logic ---
+        let editingNoticeId = null;
+
+        window.togglePin = (id, currentStatus) => {
+            const updates = {};
+            updates['schools/' + currentUser.uid + '/notices/' + id + '/isPinned'] = !currentStatus;
+            update(ref(db), updates);
+        };
+
+        window.editNotice = (id) => {
+            const noticesRef = ref(db, 'schools/' + currentUser.uid + '/notices/' + id);
+            onValue(noticesRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                document.getElementById('notice-title').value = data.title;
+                document.getElementById('notice-category').value = data.category;
+                document.getElementById('notice-target').value = data.target || 'All';
+                document.getElementById('notice-content').value = data.content;
+                document.getElementById('notice-link').value = data.linkUrl;
+                document.getElementById('notice-pinned').checked = data.isPinned;
+
+                editingNoticeId = id;
+
+                const btn = document.querySelector('form[onsubmit="postNotice(event)"] button');
+                btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Update Notice';
+                btn.classList.remove('theme-bg');
+                btn.classList.add('bg-green-600', 'hover:bg-green-700');
+
+                document.querySelector('.lg\\:col-span-1').scrollIntoView({ behavior: 'smooth' });
+            }, { onlyOnce: true });
+        };
+
+        window.moveNotice = (id, direction, index) => {
+            const noticesRef = ref(db, 'schools/' + currentUser.uid + '/notices');
+            onValue(noticesRef, (snapshot) => {
+                const notices = [];
+                snapshot.forEach(c => notices.push({ id: c.key, ...c.val() }));
+                notices.reverse();
+
+                const targetIndex = index + direction;
+                if (targetIndex < 0 || targetIndex >= notices.length) return;
+
+                const currentNotice = notices[index];
+                const swapNotice = notices[targetIndex];
+
+                const tempTime = currentNotice.timestamp;
+                set(ref(db, 'schools/' + currentUser.uid + '/notices/' + currentNotice.id + '/timestamp'), swapNotice.timestamp);
+                set(ref(db, 'schools/' + currentUser.uid + '/notices/' + swapNotice.id + '/timestamp'), tempTime);
+
+            }, { onlyOnce: true });
+        };
+
+        window.deleteNotice = (id) => {
+            if (confirm("Are you sure you want to delete this notice?")) {
+                remove(ref(db, 'schools/' + currentUser.uid + '/notices/' + id));
+            }
+        };
 
         window.postNotice = async (e) => {
             e.preventDefault();
             if (!currentUser) return;
             const btn = e.target.querySelector('button');
             const originalContent = btn.innerHTML;
+
+            const isEditing = editingNoticeId !== null;
+
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Posting...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
 
             const title = document.getElementById('notice-title').value;
             const category = document.getElementById('notice-category').value;
+            const target = document.getElementById('notice-target').value;
             const content = document.getElementById('notice-content').value;
             const linkUrl = document.getElementById('notice-link').value;
+            const isPinned = document.getElementById('notice-pinned').checked;
             const fileInput = document.getElementById('notice-image');
             const file = fileInput.files[0];
 
-            if (file && file.size > 512000) { // 500KB Limit
+            if (file && file.size > 512000) {
                 alert("Image too large. Max 500KB.");
                 btn.disabled = false;
                 btn.innerHTML = originalContent;
@@ -841,39 +1370,66 @@
 
             const saveNotice = async (imgBase64) => {
                 try {
-                    await push(ref(db, 'schools/' + currentUser.uid + '/notices'), {
-                        title,
-                        category,
-                        content,
-                        linkUrl: linkUrl || "",
-                        imageUrl: imgBase64 || "",
-                        likes: 0,
-                        dislikes: 0,
-                        views: 0, // Initialize views
-                        timestamp: new Date().toISOString()
-                    });
+                    const noticeData = {
+                        title, category, target: target || "All", content, linkUrl: linkUrl || "", isPinned: isPinned || false
+                    };
+
+
+
+                    if (imgBase64) noticeData.imageUrl = imgBase64;
+
+                    // Log the complete notice data being saved
+                    console.log('=== NOTICE DATA TO SAVE ===');
+                    console.log('Title:', noticeData.title);
+                    console.log('Category:', noticeData.category);
+
+                    console.log('Full data object:', JSON.stringify(noticeData, null, 2));
+                    console.log('===========================');
+
+                    if (isEditing) {
+                        const updates = { title, category, target: target || "All", content, linkUrl: linkUrl || "", isPinned: isPinned || false };
+
+                        if (imgBase64) updates.imageUrl = imgBase64;
+                        await update(ref(db, 'schools/' + currentUser.uid + '/notices/' + editingNoticeId), updates);
+
+                        editingNoticeId = null;
+                        btn.classList.add('theme-bg');
+                        btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        btn.innerHTML = 'Publish Now';
+                        alert('Notice updated successfully!');
+                    } else {
+                        noticeData.likes = 0;
+                        noticeData.dislikes = 0;
+                        noticeData.views = 0;
+                        noticeData.timestamp = new Date().toISOString();
+                        if (!noticeData.imageUrl) noticeData.imageUrl = "";
+                        await push(ref(db, 'schools/' + currentUser.uid + '/notices'), noticeData);
+
+                        // Show success message with details
+                        let successMsg = 'Notice published successfully!';
+                        alert(successMsg);
+                    }
+
+                    // Reset form and clear scheduler/expiry fields
                     e.target.reset();
-                    // alert('Posted!'); 
+
                 } catch (err) {
                     alert(err.message);
+                    console.error(err);
                 } finally {
                     btn.disabled = false;
-                    btn.innerHTML = originalContent;
+                    if (!isEditing) btn.innerHTML = 'Publish Now';
                 }
             };
 
             if (file) {
                 const reader = new FileReader();
-                reader.onloadend = () => saveNotice(reader.result);
+                reader.onloadend = () => {
+                    saveNotice(reader.result);
+                };
                 reader.readAsDataURL(file);
             } else {
                 saveNotice("");
-            }
-        };
-
-        window.deleteNotice = async (id) => {
-            if (confirm('Delete this notice permanently?')) {
-                await remove(ref(db, 'schools/' + currentUser.uid + '/notices/' + id));
             }
         };
 
@@ -917,7 +1473,8 @@
                 if (profile) {
                     // Update Text
                     navText.innerText = profile.name || "Notice Board";
-                    document.getElementById('public-school-name').innerText = profile.name || "Notices";
+                    const publicSchoolNameEl = document.getElementById('public-school-name');
+                    if (publicSchoolNameEl) publicSchoolNameEl.innerText = profile.name || "Notices";
                     updateAppTheme(profile.themeColor);
 
                     // Branding Logo
@@ -930,8 +1487,42 @@
                         navIcon.classList.remove('hidden');
                     }
 
+
                     // --- DYNAMIC MANIFEST UPDATE ---
                     updateDynamicManifest(profile);
+
+                    // --- FOOTER UPDATE ---
+                    const footer = document.getElementById('public-footer');
+                    const footerSocials = document.getElementById('footer-socials');
+                    const footerSchoolName = document.getElementById('footer-school-name');
+                    const footerYear = document.getElementById('footer-year');
+
+                    if (profile.socials) {
+                        footer.classList.remove('hidden');
+                        footerSchoolName.innerText = profile.name || "";
+                        footerYear.innerText = new Date().getFullYear();
+
+                        footerSocials.innerHTML = '';
+                        const socialMap = {
+                            facebook: { icon: 'fa-facebook', color: 'text-blue-600' },
+                            instagram: { icon: 'fa-instagram', color: 'text-pink-600' },
+                            twitter: { icon: 'fa-twitter', color: 'text-blue-400' },
+                            website: { icon: 'fa-globe', color: 'text-gray-600' }
+                        };
+
+                        Object.entries(profile.socials).forEach(([key, url]) => {
+                            if (url && socialMap[key]) {
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.target = "_blank";
+                                a.className = `text-2xl hover:scale-110 transition ${socialMap[key].color}`;
+                                a.innerHTML = `<i class="fa-brands ${socialMap[key].icon} ${key === 'website' ? 'fa-solid' : ''}"></i>`;
+                                footerSocials.appendChild(a);
+                            }
+                        });
+                    } else {
+                        footer.classList.add('hidden');
+                    }
                 }
             }, (error) => {
                 console.error("Profile access denied:", error);
@@ -955,8 +1546,12 @@
                 // Store in global scope for search filtering
                 window.publicNotices = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
                 const notices = window.publicNotices;
-                // Sort by timestamp desc
-                notices.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                // Sort by Pinned First, then time
+                notices.sort((a, b) => {
+                    if (a.isPinned && !b.isPinned) return -1;
+                    if (!a.isPinned && b.isPinned) return 1;
+                    return new Date(b.timestamp) - new Date(a.timestamp);
+                });
 
                 // Notification Logic for New Notices
                 if (lastNoticeDate && notices.length > 0) {
@@ -982,15 +1577,60 @@
             });
         }
 
-        // --- Search Logic ---
+        // --- Search & Filter Logic ---
+        let currentCategory = 'All';
+        let currentSemester = 'All';
+
+        window.filterByCategory = (category, btn) => {
+            currentCategory = category;
+
+            // Update UI
+            document.querySelectorAll('.category-chip').forEach(el => {
+                el.classList.remove('active', 'bg-blue-600', 'text-white', 'ring-2', 'ring-blue-100', 'border-blue-600');
+                el.classList.add('bg-white', 'text-gray-600', 'border-gray-200');
+            });
+
+            if (btn) {
+                btn.classList.remove('bg-white', 'text-gray-600', 'border-gray-200');
+                btn.classList.add('active', 'bg-blue-600', 'text-white', 'ring-2', 'ring-blue-100', 'border-blue-600');
+            }
+            triggerFilter();
+        }
+
+        window.filterBySemester = (semester) => {
+            currentSemester = semester;
+            triggerFilter();
+        }
+
+        function triggerFilter() {
+            const query = document.getElementById('public-search').value;
+            filterNotices(query);
+        }
+
         window.filterNotices = (query) => {
             if (!window.publicNotices) return;
             const term = query.toLowerCase();
-            const filtered = window.publicNotices.filter(n =>
-                (n.title && n.title.toLowerCase().includes(term)) ||
-                (n.content && n.content.toLowerCase().includes(term)) ||
-                (n.category && n.category.toLowerCase().includes(term))
-            );
+            const now = new Date();
+            console.log('Filtering notices, current time:', now.toISOString());
+
+            const filtered = window.publicNotices.filter(n => {
+
+
+                const matchesSearch = (n.title && n.title.toLowerCase().includes(term)) ||
+                    (n.content && n.content.toLowerCase().includes(term));
+
+                const matchesCategory = currentCategory === 'All' ||
+                    (n.category && n.category.includes(currentCategory));
+
+                // Semester Logic
+                const matchesSemester = currentSemester === 'All' ||
+                    !n.target || n.target === 'All' ||
+                    n.target === currentSemester;
+
+                return matchesSearch && matchesCategory && matchesSemester;
+            });
+
+            console.log(`Filtered ${filtered.length} notices from ${window.publicNotices.length} total`);
             renderNotices(filtered);
         };
 
@@ -1028,17 +1668,28 @@
                     mediaHTML += `<a href="${notice.linkUrl}" target="_blank" class="inline-flex items-center text-sm font-bold theme-text hover:underline mb-4"><i class="fa-solid fa-link mr-2"></i>Attached Link / Resource</a>`;
                 }
 
+                // Pin Badge
+                const pinBadge = notice.isPinned ?
+                    `<div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-lg shadow-sm z-10"><i class="fa-solid fa-thumbtack mr-1"></i> Pinned</div>`
+                    : '';
+
                 const card = document.createElement('div');
-                card.className = "notice-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 relative mb-6";
+                card.className = `notice-card bg-white rounded-xl shadow-md overflow-hidden border ${notice.isPinned ? 'border-blue-200 ring-1 ring-blue-100' : 'border-gray-100'} relative mb-6`;
+
+                const targetDisplay = (notice.target && notice.target !== 'All')
+                    ? `<span class="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-100 ml-2"><i class="fa-solid fa-bullseye mr-1"></i>${notice.target}</span>`
+                    : '';
 
                 card.innerHTML = `
+            ${pinBadge}
             <div class="absolute top-0 left-0 h-full w-1" style="background-color: ${accentColor}"></div>
             <div class="p-5 sm:p-6 pl-6 sm:pl-8">
-                <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center flex-wrap mb-3 gap-y-2">
                     <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
                         <i class="fa-solid ${icon} mr-1" style="color: ${accentColor}"></i> ${category}
                     </span>
-                    <span class="text-xs text-gray-400 font-medium">${new Date(notice.timestamp).toLocaleDateString()}</span>
+                    ${targetDisplay}
+                    <span class="text-xs text-gray-400 font-medium ml-auto">${new Date(notice.timestamp).toLocaleDateString()}</span>
                 </div>
                 <h3 class="text-xl font-bold text-gray-800 mb-3 leading-snug">${notice.title}</h3>
                 <p class="text-gray-600 leading-relaxed whitespace-pre-wrap text-sm mb-4">${notice.content}</p>
@@ -1080,8 +1731,33 @@
                 </div>
             </div>`;
                 list.appendChild(card);
+
+                // Track view automatically when notice is rendered
+                trackNoticeView(schoolId, notice.id);
             });
         };
+
+        // Tracking set to prevent infinite loops and count hits per session
+        const sessionViewed = new Set();
+
+        // Function to track views automatically
+        function trackNoticeView(schoolId, noticeId) {
+            // Check if this notice has been viewed in this session to prevent infinite loop
+            if (sessionViewed.has(noticeId)) {
+                return;
+            }
+            sessionViewed.add(noticeId);
+
+            // Record view in Firebase
+            const viewRef = ref(db, `schools/${schoolId}/notices/${noticeId}/views`);
+            runTransaction(viewRef, (currentViews) => {
+                return (currentViews || 0) + 1;
+            }).then(() => {
+                console.log(`View recorded for notice: ${noticeId}`);
+            }).catch((error) => {
+                console.error('Error recording view:', error);
+            });
+        }
 
         // --- Interaction Logic ---
 
@@ -1245,10 +1921,53 @@
             box.classList.remove('hidden');
         }
 
+        // --- Skeleton Loading ---
+        function renderSkeleton() {
+            const list = document.getElementById('public-notices-list');
+            list.innerHTML = '';
+
+            // Create 3 skeleton cards
+            for (let i = 0; i < 3; i++) {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 mb-6 mx-auto w-full animate-pulse";
+                card.innerHTML = `
+                    <div class="h-1 w-full bg-gray-200"></div>
+                    <div class="p-6">
+                        <div class="flex justify-between mb-4">
+                            <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+                            <div class="h-3 bg-gray-200 rounded w-1/6"></div>
+                        </div>
+                        <div class="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                        <div class="space-y-2 mb-6">
+                            <div class="h-3 bg-gray-200 rounded w-full"></div>
+                            <div class="h-3 bg-gray-200 rounded w-5/6"></div>
+                            <div class="h-3 bg-gray-200 rounded w-4/6"></div>
+                        </div>
+                        <div class="h-32 bg-gray-200 rounded w-full mb-4"></div>
+                        <div class="flex justify-between pt-4 border-t border-gray-50">
+                            <div class="flex space-x-2">
+                                <div class="h-4 w-8 bg-gray-200 rounded"></div>
+                                <div class="h-4 w-8 bg-gray-200 rounded"></div>
+                            </div>
+                            <div class="h-4 w-16 bg-gray-200 rounded"></div>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            }
+        }
+
         function setLoading(state) {
             const loader = document.getElementById('loading-view');
-            if (state) loader.classList.remove('hidden');
-            else loader.classList.add('hidden');
+            // Only show full screen loader for Global/Auth actions, not for content keys
+            if (state && !document.getElementById('public-view').classList.contains('hidden')) {
+                // We are in public view, use Skeleton instead of full screen loader
+                renderSkeleton();
+                loader.classList.add('hidden');
+            } else {
+                if (state) loader.classList.remove('hidden');
+                else loader.classList.add('hidden');
+            }
         }
 
         onAuthStateChanged(auth, (user) => {
@@ -1361,7 +2080,7 @@
                     let metaHTML = '';
                     if (s.meta) {
                         metaHTML = `<div class="mt-2 pt-2 border-t border-gray-100">
-                            <p class="text-[10px] text-gray-400 font-mono"><i class="fa-solid fa-shield-halved mr-1"></i> IP: ${s.meta.ip} <span class="mx-1">•</span> Device: ${s.meta.device}</p>
+                            <p class="text-[10px] text-gray-400 font-mono"><i class="fa-solid fa-shield-halved mr-1"></i> IP: ${s.meta.ip} <span class="mx-1">â€¢</span> Device: ${s.meta.device}</p>
                         </div>`;
                     }
 
@@ -1381,6 +2100,121 @@
         window.deleteSuggestion = async (id) => {
             if (confirm("Delete this suggestion permanently?")) {
                 await remove(ref(db, `schools/${currentUser.uid}/suggestions/${id}`));
+            }
+        };
+
+        // --- Settings Logic ---
+        window.openSettings = () => {
+            if (!currentUser) return;
+            document.getElementById('admin-settings-modal').classList.remove('hidden');
+
+            // Pre-fill existing data
+            const name = document.getElementById('admin-school-name').innerText;
+            document.getElementById('settings-name').value = name;
+            document.getElementById('settings-color').value = currentTheme;
+
+            // Load extended profile data if available (socials)
+            onValue(ref(db, 'schools/' + currentUser.uid + '/profile'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    if (data.socials) {
+                        document.getElementById('settings-fb').value = data.socials.facebook || "";
+                        document.getElementById('settings-insta').value = data.socials.instagram || "";
+                        document.getElementById('settings-twitter').value = data.socials.twitter || "";
+                        document.getElementById('settings-web').value = data.socials.website || "";
+                    }
+                }
+            }, { onlyOnce: true });
+        };
+
+        window.saveSettings = async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+            const name = document.getElementById('settings-name').value;
+            const color = document.getElementById('settings-color').value;
+            const fb = document.getElementById('settings-fb').value;
+            const insta = document.getElementById('settings-insta').value;
+            const twitter = document.getElementById('settings-twitter').value;
+            const web = document.getElementById('settings-web').value;
+
+            const fileInput = document.getElementById('settings-logo');
+            const file = fileInput.files[0];
+
+            if (file && file.size > 102400) { // 100KB Limit
+                alert("Logo image is too large. Please use an image under 100KB.");
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                return;
+            }
+
+            const updateProfile = async (logoUrl) => {
+                const updates = {
+                    name: name,
+                    themeColor: color,
+                    socials: {
+                        facebook: fb,
+                        instagram: insta,
+                        twitter: twitter,
+                        website: web
+                    }
+                };
+
+                // Only update logo if a new one is provided. 
+                // However, we need to preserve the old one if not provided. 
+                // Since 'update' does a merge, we can just conditionally add it to the object if it exists.
+                // But we are using 'set' for the profile usually, let's switch to 'update' or read-modify-write.
+                // Actually 'update(ref, updates)' is cleaner, but Profile isn't nested... 
+                // Let's use the fetched logic to ensure we don't wipe existing logo if 'logoUrl' is empty string here 
+                // but we only have 'saveSettings' scope.
+
+                // Better approach: Read current profile first inside this scope or assume 'logoUrl' handles it.
+                // If file is NOT provided, logoUrl is null.
+
+                try {
+                    const profileRef = ref(db, 'schools/' + currentUser.uid + '/profile');
+                    // We need to fetch current logo if we aren't uploading a new one
+                    let finalLogo = logoUrl;
+
+                    if (finalLogo === null) {
+                        // No new file, fetch old
+                        const snap = await new Promise(resolve => onValue(profileRef, resolve, { onlyOnce: true }));
+                        finalLogo = snap.val().logoUrl || "";
+                    }
+
+                    updates.logoUrl = finalLogo;
+                    // We need to keep 'email' and 'joinedAt' too if we use SET.
+                    // It is safer to use update for specific fields, but profile is a single object usually.
+                    // Let's use update on the specific fields
+
+                    await runTransaction(profileRef, (currentData) => {
+                        if (!currentData) return updates; // Should exist
+                        return {
+                            ...currentData,
+                            ...updates
+                        };
+                    });
+
+                    updateAppTheme(color);
+                    alert("Settings saved successfully!");
+                    document.getElementById('admin-settings-modal').classList.add('hidden');
+                } catch (err) {
+                    alert("Error saving: " + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            };
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => updateProfile(reader.result);
+                reader.readAsDataURL(file);
+            } else {
+                updateProfile(null);
             }
         };
 
@@ -1442,6 +2276,494 @@
                 console.error("Failed to update manifest:", error);
             }
         }
+
+        // ===== NEW FEATURES JAVASCRIPT =====
+
+        // --- DARK MODE ---
+        window.toggleDarkMode = () => {
+            const body = document.body;
+            const icon = document.getElementById('dark-mode-icon');
+            const isDark = body.classList.toggle('dark-mode');
+
+            // Update icon
+            icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+
+            // Save preference
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+        };
+
+        // Initialize dark mode from localStorage
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            const icon = document.getElementById('dark-mode-icon');
+            if (icon) icon.className = 'fa-solid fa-sun';
+        }
+
+        // --- SCHEDULER & EXPIRY TOGGLES ---
+
+
+        // Dark Mode Toggle (Global Wrapper for onclick)
+        window.toggleDarkMode = () => {
+            const body = document.body;
+            const icon = document.getElementById('dark-mode-icon');
+            const isDark = body.classList.toggle('dark-mode');
+            icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+        };
+
+        // --- BOOKMARKS FUNCTIONALITY ---
+        let bookmarkedNotices = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+
+        window.toggleBookmark = (schoolId, noticeId, noticeData) => {
+            const key = `${schoolId}_${noticeId}`;
+            const index = bookmarkedNotices.findIndex(b => b.key === key);
+
+            if (index > -1) {
+                bookmarkedNotices.splice(index, 1);
+            } else {
+                bookmarkedNotices.push({ key, schoolId, noticeId, data: noticeData, savedAt: new Date().toISOString() });
+            }
+
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarkedNotices));
+            updateBookmarkIcon(noticeId);
+            updateBookmarkCount();
+        };
+
+        window.updateBookmarkIcon = (noticeId) => {
+            const icons = document.querySelectorAll(`[data-notice-id="${noticeId}"] .bookmark-icon`);
+            const isBookmarked = bookmarkedNotices.some(b => b.noticeId === noticeId);
+            icons.forEach(icon => {
+                icon.className = `fa-${isBookmarked ? 'solid' : 'regular'} fa-bookmark bookmark-icon ${isBookmarked ? 'bookmark-active' : ''}`;
+            });
+        };
+
+        window.updateBookmarkCount = () => {
+            const countEl = document.getElementById('bookmark-count');
+            if (countEl) {
+                countEl.innerText = bookmarkedNotices.length;
+                if (bookmarkedNotices.length > 0) {
+                    countEl.classList.remove('hidden');
+                } else {
+                    countEl.classList.add('hidden');
+                }
+            }
+        };
+
+        window.openBookmarks = () => {
+            document.getElementById('bookmarks-modal').classList.remove('hidden');
+            renderBookmarks();
+        };
+
+        window.renderBookmarks = () => {
+            const list = document.getElementById('bookmarks-list');
+            list.innerHTML = '';
+
+            if (bookmarkedNotices.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-400 py-8">No bookmarks yet. Tap the bookmark icon on notices to save them here.</p>';
+                return;
+            }
+
+            bookmarkedNotices.reverse().forEach(bookmark => {
+                const notice = bookmark.data;
+                const card = document.createElement('div');
+                card.className = 'bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="text-[10px] font-bold theme-text bg-gray-100 px-2 py-1 rounded uppercase">${notice.category}</span>
+                            ${notice.target && notice.target !== 'All' ? `<span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded ml-1">${notice.target}</span>` : ''}
+                        </div>
+                        <button onclick="toggleBookmark('${bookmark.schoolId}', '${bookmark.noticeId}', null)" class="text-yellow-500 hover:text-gray-400">
+                            <i class="fa-solid fa-bookmark"></i>
+                        </button>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-800 mb-2">${notice.title}</h4>
+                    <p class="text-sm text-gray-600 line-clamp-2 mb-2">${notice.content}</p>
+                    <p class="text-[10px] text-gray-400">Saved: ${new Date(bookmark.savedAt).toLocaleDateString()}</p>
+                `;
+                list.appendChild(card);
+            });
+        };
+
+        // --- TEMPLATES FUNCTIONALITY ---
+        const defaultTemplates = [
+            {
+                name: 'Exam Notice',
+                category: 'Exam Schedule',
+                title: 'Upcoming [Subject] Examination',
+                content: 'This is to inform all students of [Semester] that the [Subject] examination will be held on [Date] at [Time]. Venue: [Location]. Students are requested to bring their admit cards and valid ID.'
+            },
+            {
+                name: 'Holiday Notice',
+                category: 'Holiday',
+                title: '[Occasion] Holiday',
+                content: 'The college will remain closed on [Date] on account of [Occasion]. College will resume normal functioning from [Date].'
+            },
+            {
+                name: 'Event Notice',
+                category: 'Event',
+                title: '[Event Name]',
+                content: '[Event Name] will be organized on [Date] at [Time]. Venue: [Location]. All students are cordially invited to participate. For registration, contact [Contact Person/Number].'
+            },
+            {
+                name: 'Result Announcement',
+                category: 'Exam Result',
+                title: '[Semester] [Exam Type] Results Published',
+                content: 'The results for [Semester] [Exam Type] examination have been published. Students can check their results on the college website or notice board.'
+            }
+        ];
+
+        window.openTemplates = () => {
+            document.getElementById('templates-modal').classList.remove('hidden');
+            renderTemplates();
+        };
+
+        window.renderTemplates = () => {
+            const list = document.getElementById('templates-list');
+            const customTemplates = JSON.parse(localStorage.getItem('customTemplates') || '[]');
+            const allTemplates = [...defaultTemplates, ...customTemplates];
+
+            list.innerHTML = '';
+
+            allTemplates.forEach((template, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="font-bold text-gray-800">${template.name}</h4>
+                            <span class="text-[10px] font-bold theme-text bg-gray-100 px-2 py-1 rounded uppercase mt-1 inline-block">${template.category}</span>
+                        </div>
+                        ${index >= defaultTemplates.length ? '<button onclick="deleteTemplate(' + (index - defaultTemplates.length) + ')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash text-sm"></i></button>' : ''}
+                    </div>
+                    <p class="text-xs text-gray-600 line-clamp-2 mb-3">${template.content.substring(0, 80)}...</p>
+                    <button onclick="useTemplate(${index})" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded">
+                        Use Template
+                    </button>
+                `;
+                list.appendChild(card);
+            });
+        };
+
+        window.useTemplate = (index) => {
+            const customTemplates = JSON.parse(localStorage.getItem('customTemplates') || '[]');
+            const allTemplates = [...defaultTemplates, ...customTemplates];
+            const template = allTemplates[index];
+
+            document.getElementById('notice-category').value = template.category;
+            document.getElementById('notice-title').value = template.title;
+            document.getElementById('notice-content').value = template.content;
+
+            document.getElementById('templates-modal').classList.add('hidden');
+            document.querySelector('.lg\\:col-span-1').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.saveAsTemplate = () => {
+            const title = document.getElementById('notice-title').value;
+            const category = document.getElementById('notice-category').value;
+            const content = document.getElementById('notice-content').value;
+
+            if (!title || !content) {
+                alert('Please fill in title and content to save as template');
+                return;
+            }
+
+            const customTemplates = JSON.parse(localStorage.getItem('customTemplates') || '[]');
+            const name = prompt('Enter template name:');
+            if (!name) return;
+
+            customTemplates.push({ name, category, title, content });
+            localStorage.setItem('customTemplates', JSON.stringify(customTemplates));
+
+            alert('Template saved successfully!');
+        };
+
+        window.deleteTemplate = (index) => {
+            if (!confirm('Delete this template?')) return;
+            const customTemplates = JSON.parse(localStorage.getItem('customTemplates') || '[]');
+            customTemplates.splice(index, 1);
+            localStorage.setItem('customTemplates', JSON.stringify(customTemplates));
+            renderTemplates();
+        };
+
+        // --- ANALYTICS FUNCTIONALITY ---
+        window.openAnalytics = () => {
+            document.getElementById('analytics-modal').classList.remove('hidden');
+            renderAnalytics();
+        };
+
+        window.renderAnalytics = () => {
+            const content = document.getElementById('analytics-content');
+
+            onValue(ref(db, 'schools/' + currentUser.uid + '/notices'), (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
+                    content.innerHTML = '<p class="text-center text-gray-400 py-8">No data available yet.</p>';
+                    return;
+                }
+
+                const notices = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+
+                // Calculate stats
+                const totalNotices = notices.length;
+                const totalViews = notices.reduce((sum, n) => sum + (n.views || 0), 0);
+                const totalLikes = notices.reduce((sum, n) => sum + (n.likes || 0), 0);
+                const totalComments = notices.reduce((sum, n) => sum + (Object.keys(n.comments || {}).length), 0);
+                const avgEngagement = (totalLikes + totalComments) / totalNotices || 0;
+
+                // Category breakdown
+                const byCategory = {};
+                notices.forEach(n => {
+                    if (!byCategory[n.category]) byCategory[n.category] = { count: 0, views: 0, likes: 0 };
+                    byCategory[n.category].count++;
+                    byCategory[n.category].views += n.views || 0;
+                    byCategory[n.category].likes += n.likes || 0;
+                });
+
+                // Top performers
+                const topViewed = [...notices].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
+                const topLiked = [...notices].sort((a, b) => (b.likes || 0) - (a.likes || 0)).slice(0, 5);
+
+                content.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-xs font-bold text-blue-600 uppercase">Total Notices</p>
+                            <h3 class="text-3xl font-bold text-blue-900">${totalNotices}</h3>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-xs font-bold text-green-600 uppercase">Total Views</p>
+                            <h3 class="text-3xl font-bold text-green-900">${totalViews}</h3>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <p class="text-xs font-bold text-purple-600 uppercase">Total Likes</p>
+                            <h3 class="text-3xl font-bold text-purple-900">${totalLikes}</h3>
+                        </div>
+                        <div class="bg-orange-50 p-4 rounded-lg">
+                            <p class="text-xs font-bold text-orange-600 uppercase">Avg Engagement</p>
+                            <h3 class="text-3xl font-bold text-orange-900">${avgEngagement.toFixed(1)}</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-800 mb-4">Category Breakdown</h4>
+                            <div class="space-y-2">
+                                ${Object.entries(byCategory).map(([cat, stats]) => `
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <span class="text-sm font-bold text-gray-700">${cat}</span>
+                                        <div class="text-right">
+                                            <span class="text-xs text-gray-500">${stats.count} notices</span>
+                                            <span class="text-xs text-gray-400 ml-2">${stats.views} views</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-800 mb-4">Top Viewed Notices</h4>
+                            <div class="space-y-2">
+                                ${topViewed.map((n, i) => `
+                                    <div class="flex items-center py-2 border-b border-gray-100">
+                                        <span class="text-lg font-bold text-gray-400 mr-3">#${i + 1}</span>
+                                        <div class="flex-grow">
+                                            <p class="text-sm font-bold text-gray-800 truncate">${n.title}</p>
+                                            <p class="text-xs text-gray-500">${n.views || 0} views • ${n.likes || 0} likes</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, { onlyOnce: true });
+        };
+
+        // --- CALENDAR FUNCTIONALITY ---
+        let currentCalendarMonth = new Date();
+
+        window.openCalendar = () => {
+            document.getElementById('calendar-modal').classList.remove('hidden');
+            renderCalendar();
+        };
+
+        window.changeCalendarMonth = (direction) => {
+            currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + direction);
+            renderCalendar();
+        };
+
+        window.renderCalendar = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const schoolId = urlParams.get('school');
+            if (!schoolId) return;
+
+            const monthDisplay = document.getElementById('calendar-month-display');
+            const content = document.getElementById('calendar-content');
+
+            monthDisplay.innerText = currentCalendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            onValue(ref(db, 'schools/' + schoolId + '/notices'), (snapshot) => {
+                const data = snapshot.val();
+                const notices = data ? Object.entries(data).map(([key, val]) => ({ id: key, ...val })) : [];
+
+                // Filter to events/exams
+                const events = notices.filter(n =>
+                    n.category && (n.category.includes('Exam') || n.category === 'Event' || n.category === 'Holiday')
+                );
+
+                // Build calendar
+                const year = currentCalendarMonth.getFullYear();
+                const month = currentCalendarMonth.getMonth();
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                let html = '<div class="grid grid-cols-7 gap-2">';
+
+                // Headers
+                ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
+                    html += `<div class="text-center font-bold text-sm text-gray-600 py-2">${day}</div>`;
+                });
+
+                // Empty cells
+                for (let i = 0; i < firstDay; i++) {
+                    html += '<div class="bg-gray-50 rounded p-2 min-h-[80px]"></div>';
+                }
+
+                // Days
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const dayEvents = events.filter(e => e.timestamp && e.timestamp.startsWith(dateStr));
+
+                    html += `<div class="bg-white border border-gray-200 rounded p-2 min-h-[80px] hover:shadow-md transition">
+                        <div class="font-bold text-sm text-gray-700 mb-1">${day}</div>
+                        <div class="space-y-1">
+                            ${dayEvents.map(e => `
+                                <div class="text-[9px] font-bold px-1 py-0.5 rounded truncate ${e.category === 'Exam Schedule' ? 'bg-red-100 text-red-700' :
+                            e.category === 'Event' ? 'bg-purple-100 text-purple-700' :
+                                'bg-yellow-100 text-yellow-700'
+                        }" title="${e.title}">${e.title.substring(0, 12)}...</div>
+                            `).join('')}
+                        </div>
+                    </div>`;
+                }
+
+                html += '</div>';
+                content.innerHTML = html;
+            }, { onlyOnce: true });
+        };
+
+        // --- SHARE FUNCTIONALITY ---
+        let currentShareNotice = null;
+
+        window.openShareModal = (schoolId, noticeId, noticeTitle) => {
+            currentShareNotice = { schoolId, noticeId, title: noticeTitle };
+            document.getElementById('share-notice-title').innerText = noticeTitle;
+            document.getElementById('share-modal').classList.remove('hidden');
+        };
+
+        window.shareVia = (platform) => {
+            if (!currentShareNotice) return;
+
+            const url = `${window.location.origin}${window.location.pathname}?school=${currentShareNotice.schoolId}`;
+            const text = `Check out this notice: ${currentShareNotice.title}`;
+
+            switch (platform) {
+                case 'copy':
+                    navigator.clipboard.writeText(url);
+                    alert('Link copied to clipboard!');
+                    break;
+                case 'whatsapp':
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+                    break;
+                case 'facebook':
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                    break;
+                case 'twitter':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+                    break;
+            }
+
+            document.getElementById('share-modal').classList.add('hidden');
+        };
+
+        // --- REACTIONS SYSTEM (Enhanced) ---
+        const reactionTypes = {
+            helpful: { icon: '👍', label: 'Helpful' },
+            important: { icon: '❤️', label: 'Important' },
+            excited: { icon: '🎉', label: 'Excited' },
+            unclear: { icon: '🤔', label: 'Unclear' }
+        };
+
+        window.addReaction = async (schoolId, noticeId, reactionType) => {
+            if (!schoolId || !noticeId) return;
+
+            // Check if already reacted
+            const reactionKey = `reaction_${schoolId}_${noticeId}`;
+            const existingReaction = localStorage.getItem(reactionKey);
+
+            if (existingReaction === reactionType) {
+                alert('You already added this reaction!');
+                return;
+            }
+
+            // Remove old reaction if exists
+            if (existingReaction) {
+                await runTransaction(ref(db, `schools/${schoolId}/notices/${noticeId}/reactions/${existingReaction}`), (current) => {
+                    return (current || 1) - 1;
+                });
+            }
+
+            // Add new reaction
+            await runTransaction(ref(db, `schools/${schoolId}/notices/${noticeId}/reactions/${reactionType}`), (current) => {
+                return (current || 0) + 1;
+            });
+
+            localStorage.setItem(reactionKey, reactionType);
+        };
+
+        // --- EXPORT FUNCTIONALITY ---
+        window.exportNotices = async () => {
+            if (!currentUser) return;
+
+            const format = confirm('Export as CSV? (Cancel for JSON)');
+
+            onValue(ref(db, 'schools/' + currentUser.uid + '/notices'), (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
+                    alert('No notices to export');
+                    return;
+                }
+
+                const notices = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+
+                if (format) {
+                    // CSV export
+                    let csv = 'Title,Category,Target,Content,Views,Likes,Timestamp\n';
+                    notices.forEach(n => {
+                        csv += `"${n.title}","${n.category}","${n.target || 'All'}","${n.content.replace(/"/g, '""')}",${n.views || 0},${n.likes || 0},${n.timestamp}\n`;
+                    });
+
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `notices_${new Date().toISOString().split('T')[0]}.csv`;
+                    a.click();
+                } else {
+                    // JSON export
+                    const json = JSON.stringify(notices, null, 2);
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `notices_${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                }
+            }, { onlyOnce: true });
+        };
+
+        // Initialize on load
+        updateBookmarkCount();
     </script>
 </body>
 
