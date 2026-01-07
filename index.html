@@ -204,6 +204,41 @@
             background-color: rgba(59, 130, 246, 0.1) !important;
             border-color: #3b82f6 !important;
         }
+
+        /* Admin Semester Filter Buttons */
+        .admin-semester-btn {
+            background-color: #f3f4f6;
+            color: #6b7280;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .admin-semester-btn:hover {
+            background-color: #e5e7eb;
+            color: #374151;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-semester-btn.active {
+            background-color: var(--theme-color);
+            color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        body.dark-mode .admin-semester-btn {
+            background-color: #334155;
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .admin-semester-btn:hover {
+            background-color: #475569;
+            color: #f1f5f9;
+        }
+
+        body.dark-mode .admin-semester-btn.active {
+            background-color: var(--theme-color);
+            color: white;
+        }
     </style>
 </head>
 
@@ -789,6 +824,140 @@
 
                 <!-- Notices List -->
                 <div class="lg:col-span-2">
+                    <!-- Shareable Semester Links -->
+                    <div class="mb-6">
+                        <h4 class="text-sm font-bold text-gray-600 uppercase mb-3 flex items-center">
+                            <i class="fa-solid fa-link mr-2"></i>Shareable Semester Links
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <!-- All Semesters Link -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-bold text-gray-800 text-sm">All Semesters</span>
+                                    <button onclick="copySemesterLink('All')"
+                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs font-bold transition">
+                                        <i class="fa-solid fa-copy mr-1"></i>Copy Link
+                                    </button>
+                                </div>
+                                <input type="text" id="link-All" readonly
+                                    class="w-full text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none"
+                                    value="Loading...">
+                            </div>
+
+                            <!-- Semester 1 Link -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-bold text-gray-800 text-sm">Semester 1</span>
+                                    <button onclick="copySemesterLink('Sem 1')"
+                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs font-bold transition">
+                                        <i class="fa-solid fa-copy mr-1"></i>Copy Link
+                                    </button>
+                                </div>
+                                <input type="text" id="link-Sem1" readonly
+                                    class="w-full text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none"
+                                    value="Loading...">
+                            </div>
+
+                            <!-- Semester 2 Link -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-bold text-gray-800 text-sm">Semester 2</span>
+                                    <button onclick="copySemesterLink('Sem 2')"
+                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs font-bold transition">
+                                        <i class="fa-solid fa-copy mr-1"></i>Copy Link
+                                    </button>
+                                </div>
+                                <input type="text" id="link-Sem2" readonly
+                                    class="w-full text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none"
+                                    value="Loading...">
+                            </div>
+
+                            <!-- Semester 3 Link -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-bold text-gray-800 text-sm">Semester 3</span>
+                                    <button onclick="copySemesterLink('Sem 3')"
+                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs font-bold transition">
+                                        <i class="fa-solid fa-copy mr-1"></i>Copy Link
+                                    </button>
+                                </div>
+                                <input type="text" id="link-Sem3" readonly
+                                    class="w-full text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none"
+                                    value="Loading...">
+                            </div>
+
+                            <!-- Semester 4 Link -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-bold text-gray-800 text-sm">Semester 4</span>
+                                    <button onclick="copySemesterLink('Sem 4')"
+                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs font-bold transition">
+                                        <i class="fa-solid fa-copy mr-1"></i>Copy Link
+                                    </button>
+                                </div>
+                                <input type="text" id="link-Sem4" readonly
+                                    class="w-full text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none"
+                                    value="Loading...">
+                            </div>
+
+                            <!-- Semester 5 Link -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-bold text-gray-800 text-sm">Semester 5</span>
+                                    <button onclick="copySemesterLink('Sem 5')"
+                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs font-bold transition">
+                                        <i class="fa-solid fa-copy mr-1"></i>Copy Link
+                                    </button>
+                                </div>
+                                <input type="text" id="link-Sem5" readonly
+                                    class="w-full text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none"
+                                    value="Loading...">
+                            </div>
+
+                            <!-- Semester 6 Link -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-bold text-gray-800 text-sm">Semester 6</span>
+                                    <button onclick="copySemesterLink('Sem 6')"
+                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs font-bold transition">
+                                        <i class="fa-solid fa-copy mr-1"></i>Copy Link
+                                    </button>
+                                </div>
+                                <input type="text" id="link-Sem6" readonly
+                                    class="w-full text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none"
+                                    value="Loading...">
+                            </div>
+
+                            <!-- Semester 7 Link -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-bold text-gray-800 text-sm">Semester 7</span>
+                                    <button onclick="copySemesterLink('Sem 7')"
+                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs font-bold transition">
+                                        <i class="fa-solid fa-copy mr-1"></i>Copy Link
+                                    </button>
+                                </div>
+                                <input type="text" id="link-Sem7" readonly
+                                    class="w-full text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none"
+                                    value="Loading...">
+                            </div>
+
+                            <!-- Semester 8 Link -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-bold text-gray-800 text-sm">Semester 8</span>
+                                    <button onclick="copySemesterLink('Sem 8')"
+                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs font-bold transition">
+                                        <i class="fa-solid fa-copy mr-1"></i>Copy Link
+                                    </button>
+                                </div>
+                                <input type="text" id="link-Sem8" readonly
+                                    class="w-full text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 focus:outline-none"
+                                    value="Loading...">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-xl font-bold text-gray-800"><i
                                 class="fa-solid fa-layer-group theme-text mr-2"></i>Recent Notices</h3>
@@ -1163,6 +1332,9 @@
                 loadSuggestions();
             };
 
+            // Populate Semester Links immediately
+            populateSemesterLinks();
+
             // Fetch Profile
             onValue(ref(db, 'schools/' + currentUser.uid + '/profile'), (snapshot) => {
                 const data = snapshot.val();
@@ -1173,6 +1345,7 @@
                     if (data.themeColor) updateAppTheme(data.themeColor);
 
                     // Show Logo
+                    const logoImg = document.getElementById('admin-logo-display');
                     if (data.logoUrl) {
                         logoImg.src = data.logoUrl;
                         logoImg.classList.remove('hidden');
@@ -1191,11 +1364,20 @@
             });
 
             // Fetch Notices
+            let currentAdminSemesterFilter = 'All'; // Track current semester filter
+            let allAdminNoticesData = null; // Store all notices for filtering
+
             onValue(ref(db, 'schools/' + currentUser.uid + '/notices'), (snapshot) => {
+                allAdminNoticesData = snapshot.val(); // Store the data for filtering
+                renderAdminNotices(currentAdminSemesterFilter); // Render with current filter
+            });
+
+            // Function to render admin notices with optional semester filter
+            function renderAdminNotices(semesterFilter) {
                 const list = document.getElementById('admin-notices-list');
                 list.innerHTML = '';
 
-                const data = snapshot.val();
+                const data = allAdminNoticesData;
                 if (!data) {
                     list.innerHTML = `
                         <div class="text-center text-gray-400 py-12 bg-white rounded-xl border-2 border-dashed border-gray-200">
@@ -1206,7 +1388,12 @@
                     return;
                 }
 
-                const notices = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+                let notices = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+
+                // Apply semester filter
+                if (semesterFilter && semesterFilter !== 'All') {
+                    notices = notices.filter(notice => notice.target === semesterFilter || notice.target === 'All');
+                }
 
                 // Robust Sort
                 notices.sort((a, b) => {
@@ -1343,8 +1530,21 @@
                 if (statViews) statViews.innerText = totalViews;
                 if (statLikes) statLikes.innerText = totalLikes;
 
-            });
+            }
+
+            // Global function to filter admin notices by semester
+            window.filterAdminNoticesBySemester = (semester) => {
+                currentAdminSemesterFilter = semester;
+                renderAdminNotices(semester);
+
+                // Update UI active state
+                document.querySelectorAll('.admin-semester-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`.admin-semester-btn[data-semester="${semester}"]`)?.classList.add('active');
+            };
         }
+
 
 
         // --- Edit & Move Logic ---
@@ -1569,6 +1769,29 @@
                 Notification.requestPermission();
             }
 
+            // --- SEMESTER LOCK LOGIC (MUST BE AT TOP TO ALWAYS TRIGGER) ---
+            // Check if there's a semester URL parameter and lock it
+            const urlParams = new URLSearchParams(window.location.search);
+            const semesterParam = urlParams.get('semester');
+            if (semesterParam) {
+                const semesterDropdown = document.getElementById('public-semester-filter');
+                if (semesterDropdown) {
+                    semesterDropdown.value = semesterParam;
+
+                    // LOCK the dropdown - students cannot change semester
+                    semesterDropdown.disabled = true;
+                    semesterDropdown.style.opacity = '0.7';
+                    semesterDropdown.style.cursor = 'not-allowed';
+                    semesterDropdown.title = `Locked to ${semesterParam}`;
+
+                    // Store locked semester globally to enforce filter
+                    window.lockedSemester = semesterParam;
+
+                    // Apply the filter immediately
+                    currentSemester = semesterParam;
+                }
+            }
+
             // 1. Fetch Profile (Public)
             const profileRef = ref(db, 'schools/' + schoolId + '/profile');
             onValue(profileRef, (snapshot) => {
@@ -1681,7 +1904,9 @@
                 }
                 lastNoticeDate = notices.length > 0 ? new Date(notices[0].timestamp) : new Date();
 
-                renderNotices(window.publicNotices);
+
+                // Apply filters immediately to respect any locked semester
+                triggerFilter();
                 setLoading(false);
             }, (error) => {
                 console.error("Notices access denied:", error);
@@ -1710,6 +1935,12 @@
         }
 
         window.filterBySemester = (semester) => {
+            // Enforce semester lock - if a semester is locked, ignore change attempts
+            if (window.lockedSemester) {
+                console.log(`Semester is locked to ${window.lockedSemester}. Cannot change.`);
+                return; // Block the change
+            }
+
             currentSemester = semester;
             triggerFilter();
         }
@@ -2873,6 +3104,35 @@
                     a.click();
                 }
             }, { onlyOnce: true });
+        };
+
+        // --- SEMESTER LINK FUNCTIONALITY ---
+        window.copySemesterLink = (semester) => {
+            const inputId = semester === 'All' ? 'link-All' : `link-${semester.replace(' ', '')}`;
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.select();
+                navigator.clipboard.writeText(input.value);
+                alert(`${semester} link copied to clipboard!`);
+            }
+        };
+
+        window.populateSemesterLinks = () => {
+            if (!currentUser) return;
+
+            const baseUrl = `${window.location.origin}${window.location.pathname}?school=${currentUser.uid}`;
+
+            // Populate All Semesters link
+            const linkAll = document.getElementById('link-All');
+            if (linkAll) linkAll.value = baseUrl;
+
+            // Populate individual semester links
+            for (let i = 1; i <= 8; i++) {
+                const linkInput = document.getElementById(`link-Sem${i}`);
+                if (linkInput) {
+                    linkInput.value = `${baseUrl}&semester=Sem ${i}`;
+                }
+            }
         };
 
         // Initialize on load
