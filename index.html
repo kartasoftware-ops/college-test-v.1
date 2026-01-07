@@ -1153,7 +1153,6 @@
         function showAdminDashboard() {
             hideAllViews();
             document.getElementById('admin-view').classList.remove('hidden');
-            setLoading(true);
 
             const link = `${window.location.origin}${window.location.pathname}?school=${currentUser.uid}`;
             document.getElementById('public-link-input').value = link;
@@ -1189,7 +1188,6 @@
                         logoUrl: data.logoUrl
                     });
                 }
-                setLoading(false);
             });
 
             // Fetch Notices
